@@ -2,22 +2,36 @@
 
 
 # Purpose of this project
-- Compare the performance of sampling dataset vs weighting the classes when dealing with imbalanced dataset
+- Compare the performance of sampling dataset vs balancing class weights when you train a classification model with imbalanced dataset
   - Analytical objective: maximize Area under Precision-Recall Curve (AUPRC)
   - sklearn's implementation = Average Precision (AP)
 - Identify ways to speed up sklearn on a large dataset with 285,000 rows
 
-# Findings 
-- class imbalance
-  - AP > AUROC
-  - <img src="../data/image/2022-10-29-14-23-49.png">
-  - <img src="../data/image/2022-10-29-14-23-58.png">
-- limitation of balancing class weights
-  - cannot use HalvingRandomSearchCV for imbalanced dataset as each epoch might not contain the rare class
-- limitation of ADASYN
-  - cannot apply sample_weight ("Amount" column)
-- Parallel backend of sklearn
-  - potential to speed up with spark clusters
+# What I learnt from this project 
+## AP vs AUROC
+- Compared with AP, AUROC tends to be too optimistic when the positive class is rare
+<img src="../master/data/image/2022-10-29-14-23-49.png">
+<img src="../master/data/image/2022-10-29-14-23-58.png">
+- Why is AUROC too optimistic?
+  - ROC curve plots recall vs FPR
+  - Precision-Recall curve plots recall vs precision
+    - essentially substitutes FPR with precision
+  - $FPR = \frac{FP}{FP+TN}$
+  - $Precision = \frac{TP}{TP+FP}$
+  - In a dataset where the positive class is rare and the negative class is abundant, any weak model can capture a large TN, which will inflate the denominator of FPR
+- Alternative: custom scoring
+  
+## Implementational limitation of balancing class weights
+  - Cannot use HalvingGridSearchCV or HalvingRandomSearchCV to speed up training for large imbalanced dataset as candidates chosen in the first few epochs to evaluate gradients might not contain the rare class
+## Implementational limitation of sampling techniques
+  - Cannot apply sample_weight (e.g. "Amount" column) in fitting as sampling technique will shuffle the dataset while sample_weight is based on the original order of the dataset
+## Parallelism in sklearn
+- n_jobs parameter in sklearn's estimators ([more details](https://scikit-learn.org/stable/computing/parallelism.html))
+  - When the underlying implementation uses joblib, the number of workers (threads or processes) that are spawned in parallel can be controlled via the n_jobs parameter
+  - <img src="../master/data/image/2022-10-29-15-46-33.png">
+- Options for joblib's parallel backend 
+  - "loky", "threading": distribute locally
+  - "spark": distribute across spark clusters
 
 ----------------------------------
 
@@ -31,9 +45,9 @@
 # Data Preparation
 Since the dataset has been preprocessed with PCA, we don't have to do a lot of preprocessing except feature scaling and can focus on comparing the performance of our models. We will use the following pipelines for each approach.
 ## Sampling using imblearn's ADASYN
-<img src="../data/image/2022-10-29-12-31-56.png">
+<img src="../master/data/image/2022-10-29-12-31-56.png">
 ## Weighting the classes
-<img src="../data/image/2022-10-29-12-33-27.png">
+<img src="../master/data/image/2022-10-29-12-33-27.png">
 
 # Modeling
 ## Shortlist a few models to tune
@@ -42,12 +56,12 @@ We first limit our scope to classification models implemented in sklearn with th
 - predict_proba() method for applying ensemble methods later on
 
 Based on the below test run on standard hyperparameters, we can further tune the hyperparameters of extra trees classifier and XGBoost classifier to improve the performance of the models.
-<img src="../data/image/2022-10-29-12-43-14.png">
+<img src="../master/data/image/2022-10-29-12-43-14.png">
 
 ## Tune hyperparameters of the shortlisted models using RandomizedSearchCV
 
-<img src="../data/image/2022-10-29-12-56-22.png">
-<img src="../data/image/2022-10-29-14-23-13.png">
+<img src="../master/data/image/2022-10-29-12-56-22.png">
+<img src="../master/data/image/2022-10-29-14-23-13.png">
 
 ## Apply ensemble learning to improve the performance of the tuned models
 - Methods tested: Adaboost, Bagging, Stacking, Voting
@@ -56,21 +70,21 @@ Based on the below test run on standard hyperparameters, we can further tune the
 
 # Evaluation on test set
 - Final model = Adaboost Extra Trees Classifier
-- <img src="../data/image/2022-10-29-14-29-58.png">
+- <img src="../master/data/image/2022-10-29-14-29-58.png">
 
 ## AP on test set vs CV result
 AP on test set = 0.8757
 The red dot represents the AP on the test set, while the blue dots represents the AP from 10-fold cross-validation. The model's performance on test set is good and within the range of CV numbers.
-<img src="../data/image/2022-10-29-14-31-01.png">
+<img src="../master/data/image/2022-10-29-14-31-01.png">
 AUROC on test set = 0.9750 (too optimistic)
-- <img src="../data/image/2022-10-29-14-33-33.png">
+- <img src="../master/data/image/2022-10-29-14-33-33.png">
 
 ## Lift and gain chart
 Lift in 1st decide is more than 9x and we can capture more than 90% of frauds in the first 10% of the train set.
-<img src="../data/image/2022-10-29-14-34-38.png">
+<img src="../master/data/image/2022-10-29-14-34-38.png">
 
 ## Precision-Recall Tradeoff
-<img src="../data/image/2022-10-29-14-47-10.png">
+<img src="../master/data/image/2022-10-29-14-47-10.png">
 Based on the tradeoff, we can set a cutoff to achieve, for example 85% recall if we prioritize recall over precision as we care about catching more frauds and false alarms are acceptable. The confusion matrix is as below:
-<img src="../data/image/2022-10-29-14-48-58.png"> <img src="../data/image/2022-10-29-14-48-43.png">
+<img src="../master/data/image/2022-10-29-14-48-58.png"> <img src="../master/data/image/2022-10-29-14-48-43.png">
 
