@@ -38,6 +38,7 @@
 
 
 # Data Understanding
+> script: **source/[Kaggle_1_load_data.ipynb](https://github.com/WillKWL/Project-KaggleCreditCard/blob/main/source/Kaggle_1_load_data.ipynb)**
 - [Kaggle Credit Card Fraud Detection dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud?resource=download): anonymized transactions made by credit cards in September 2013 by European cardholders
 - The dataset is highly imbalanced, with the positive class (frauds) accounting for 0.172% of all transactions
 - For confidentiality issues, the original features V1, V2, ... V28 are not provided, and only the results of a PCA transformation are provided
@@ -46,9 +47,11 @@
 # Data Preparation
 Since the dataset has been preprocessed with PCA, we don't have to do a lot of preprocessing except feature scaling and can focus on comparing the performance of our models. We will use the following pipelines for each approach.
 ## Sampling using imblearn's ADASYN
+> script: **source/[Kaggle_2A_ML_workflow_ADASYN_average_precision.ipynb](https://github.com/WillKWL/Project-KaggleCreditCard/blob/main/source/Kaggle_2A_ML_workflow_ADASYN_average_precision.ipynb)**
 <img src="../main/data/image/2022-10-29-12-31-56.png">
 
 ## Alternative: Balancing the class weights
+> script: **source/[Kaggle_2B_ML_workflow_class_balance_average_precision.ipynb](https://github.com/WillKWL/Project-KaggleCreditCard/blob/main/source/Kaggle_2B_ML_workflow_class_balance_average_precision.ipynb)**
 <img src="../main/data/image/2022-10-29-12-33-27.png">
 
 # Modeling
@@ -71,6 +74,7 @@ Based on the below test run on standard hyperparameters, we can further tune the
 - mean 10-fold cross-validation AP: 0.8381 (Adaboost Extra Trees) vs 0.8298 (Extra Trees)
 
 # Evaluation on test set
+> script: **source/[Kaggle_3_test_set_evaluation.ipynb](https://github.com/WillKWL/Project-KaggleCreditCard/blob/main/source/Kaggle_3_test_set_evaluation.ipynb)**
 - Final model = Adaboost Extra Trees Classifier
 - <img src="../main/data/image/2022-10-29-14-29-58.png">
 
