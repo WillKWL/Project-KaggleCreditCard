@@ -80,6 +80,7 @@ Based on the below test run on standard hyperparameters, we can further tune the
 
 ## AP on test set vs CV result
 - AP on test set = 0.8757
+- baseline = % of positive class in test set = 0.0017
 - The red dot represents the AP on the test set, while the blue dots represents the AP from 10-fold cross-validation. The model's performance on test set is good and within the range of CV numbers.
 <img src="../main/data/image/2022-10-29-14-31-01.png">
 
