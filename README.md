@@ -24,6 +24,7 @@
   
 ## Implementational limitation of balancing class weights
   - Cannot use HalvingGridSearchCV or HalvingRandomSearchCV to speed up training for large imbalanced dataset as candidates chosen in the first few epochs to evaluate gradients might not contain the rare class
+  - Although sklearn's implementation mentioned that given a classifier, the default is [StratifedKFold](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.HalvingGridSearchCV.html?highlight=halving#sklearn.model_selection.HalvingGridSearchCV)
 ## Implementational limitation of sampling techniques
   - Cannot apply sample_weight (e.g. "Amount" column) in fitting as sampling technique will shuffle the dataset while sample_weight is based on the original order of the dataset
 ## Parallelism in sklearn
